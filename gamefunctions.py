@@ -15,9 +15,9 @@ def purchase_item(itemPrice, startingMoney, quantityToPurchase=1):
         quantityToPurchase (int): Desired amount.
 
     Returns:
-        tuple: (final_quantity, remaining_money)
+        tuple: (final_quantity, remaining_money)"""
 
-    Calculate how many items you can afford with start money"""
+    """Calculate how many items you can afford with start money"""
     affordable_quantity = startingMoney // itemPrice
     """Limits the purchase to the requested amount or what is affordable"""
     final_quantity = min(quantityToPurchase, affordable_quantity)
