@@ -100,8 +100,28 @@ print_shop_menu("Stew", 8, "Bread", 3)
 print_shop_menu("Staff", 150, "Satchel", 30)
 print_shop_menu("Sword", 150, "Shield", 90)
 
-"""Use of the __name__ variable"""
-if __name__ == "__main__":
-    test_functions()
+def get_user_action(options):
+    """Validates user input for game options."""
+    while True:
+        choice = input("Choice: ")
+        if choice in options:
+            return choice
+        print(f"Invalid choice. Pick from {options}")
+
+def combat(hp, power):
+    """Handles the game loop"""
+    monster = new_random_monster()
+    m_hp = monster["health"]
+    print(f"\nA {monster['name']} appeared! {monster['description']}")
+    while hp > 0 and m_hp > 0:
+        print(f"HP: {hp} | {monster['name']} HP: {m_hp}")
+        action = get_user_action(["1", "2"]) # 1=Fight, 2=Run
+        if action == "1":
+            m_hp -= power
+            hp -= monster["power"]
+            print(f"You hit for {power}! {monster['name']} hits for {monster['power']}!")
+        else:
+            return hp, 0
+    return (hp, monster["money"]) if m_hp <= 0 else (0, 0)
 
 input("\nPress Enter to exit...")
