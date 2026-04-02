@@ -52,25 +52,26 @@ def new_random_monster():
         
     return monster
 
-"""Call purchase_item three times with different inputs"""
-num, money = purchase_item(341, 2112)
-print(f"Bought: {num}, Left: {money}")
+if __name__ == "__main__":
+    """Call purchase_item three times with different inputs"""
+    num, money = purchase_item(341, 2112)
+    print(f"Bought: {num}, Left: {money}")
 
-num, money = purchase_item(123, 201, 3)
-print(f"Bought: {num}, Left: {money}")
+    num, money = purchase_item(123, 201, 3)
+    print(f"Bought: {num}, Left: {money}")
 
-num, money = purchase_item(100, 1000, 5)
-print(f"Bought: {num}, Left: {money}")
+    num, money = purchase_item(100, 1000, 5)
+    print(f"Bought: {num}, Left: {money}")
 
-"""Call new_random_monster three different times"""
-m1 = new_random_monster()
-print(m1)
+    """Call new_random_monster three different times"""
+    m1 = new_random_monster()
+    print(m1)
 
-m2 = new_random_monster()
-print(m2)
+    m2 = new_random_monster()
+    print(m2)
 
-m3 = new_random_monster()
-print(m3)
+    m3 = new_random_monster()
+    print(m3)
 
 def print_welcome(name, width):
     """Prints a elcome message
@@ -89,39 +90,51 @@ def print_shop_menu(item1Name, item1Price, item2Name, item2Price):
     p2 = f"${item2Price:.2f}"
     print(f"| {item1Name:<12}{p1:>9} |")
     print(f"| {item2Name:<12}{p2:>9} |")
-   
-"""Call print_welcome three times"""
-print_welcome("Jeff", 20)
-print_welcome("Tony", 20)
-print_welcome("Antonio", 23)
 
-"""Call print_shop_menu three times"""
-print_shop_menu("Stew", 8, "Bread", 3)
-print_shop_menu("Staff", 150, "Satchel", 30)
-print_shop_menu("Sword", 150, "Shield", 90)
+if __name__ == "__main__":
+    """Call print_welcome three times"""
+    print_welcome("Jeff", 20)
+    print_welcome("Tony", 20)
+    print_welcome("Antonio", 23)
 
-def get_user_action(options):
-    """Validates user input for game options."""
+    """Call print_shop_menu three times"""
+    print_shop_menu("Stew", 8, "Bread", 3)
+    print_shop_menu("Staff", 150, "Satchel", 30)
+    print_shop_menu("Sword", 150, "Shield", 90)
+
+def get_user_action(options, prompt_text="Choice: "):
+    """Validates user input and displays the specific menu provided."""
     while True:
-        choice = input("Choice: ")
+        choice = input(prompt_text)
         if choice in options:
             return choice
-        print(f"Invalid choice. Pick from {options}")
+        print(f"Invalid choice '{choice}'. Please pick from {options}")
 
 def combat(hp, power):
-    """Handles the game loop"""
+    """Handles the fight logic with the menu inside the input prompt."""
     monster = new_random_monster()
     m_hp = monster["health"]
-    print(f"\nA {monster['name']} appeared! {monster['description']}")
+    print(f"\n--- BATTLE: {monster['name']} ---")
+    print(monster["description"])
+
     while hp > 0 and m_hp > 0:
-        print(f"HP: {hp} | {monster['name']} HP: {m_hp}")
-        action = get_user_action(["1", "2"]) # 1=Fight, 2=Run
+        print(f"\nYour HP: {hp} | {monster['name']} HP: {m_hp}")
+        
+        """Fixed the choices error and I put them here"""
+        prompt = "\nChoose your move:\n1) Attack (Deal damage)\n2) Run (Retreat to town)\nChoice: "
+        action = get_user_action(["1", "2"], prompt) 
+        
         if action == "1":
             m_hp -= power
             hp -= monster["power"]
-            print(f"You hit for {power}! {monster['name']} hits for {monster['power']}!")
+            print(f"Success! You deal {power} damage. {monster['name']} hits back for {monster['power']}!")
         else:
+            print("You escaped back to town!")
             return hp, 0
-    return (hp, monster["money"]) if m_hp <= 0 else (0, 0)
+            
+    if m_hp <= 0:
+        print(f"VICTORY! You defeated the {monster['name']} and found {monster['money']} gold.")
+        return hp, monster["money"]
+    return 0, 0
 
-input("\nPress Enter to exit...")
+"""Removed press enter to exit"""
