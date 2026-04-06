@@ -110,31 +110,65 @@ def get_user_action(options, prompt_text="Choice: "):
             return choice
         print(f"Invalid choice '{choice}'. Please pick from {options}")
 
-def combat(hp, power):
-    """Handles the fight logic with the menu inside the input prompt."""
+def combat(state):
+    """Handles fight logic using the state dictionary."""
     monster = new_random_monster()
     m_hp = monster["health"]
     print(f"\n--- BATTLE: {monster['name']} ---")
-    print(monster["description"])
+    
+    weapon = next((i for i in state["player_inventory"] if i.get("equipped")), None)
+    current_power = state["player_power"] + (20 if weapon else 0)
 
-    while hp > 0 and m_hp > 0:
-        print(f"\nYour HP: {hp} | {monster['name']} HP: {m_hp}")
+    while state["player_hp"] > 0 and m_hp > 0:
+        print(f"\nYour HP: {state['player_hp']} | {monster['name']} HP: {m_hp}")
         
-        """Fixed the choices error and I put them here"""
-        prompt = "\nChoose your move:\n1) Attack (Deal damage)\n2) Run (Retreat to town)\nChoice: "
-        action = get_user_action(["1", "2"], prompt) 
+        has_orb = any(i["name"] == "Magic Orb" for i in state["player_inventory"])
+        
+        options = ["1", "2"]
+        prompt = "\nChoose your move:\n1) Attack\n2) Run"
+        if has_orb:
+            options.append("3")
+            prompt += "\n3) Use Magic Orb (Instant Win!)"
+        
+        action = get_user_action(options, prompt + "\nChoice: ")
         
         if action == "1":
-            m_hp -= power
-            hp -= monster["power"]
-            print(f"Success! You deal {power} damage. {monster['name']} hits back for {monster['power']}!")
+            m_hp -= current_power
+            state["player_hp"] -= monster["power"]
+            print(f"You deal {current_power} damage!")
+        elif action == "3":
+            print(f"You used the Magic Orb! The {monster['name']} is defeated instantly!")
+            orb = next(i for i in state["player_inventory"] if i["name"] == "Magic Orb")
+            state["player_inventory"].remove(orb)
+            m_hp = 0
         else:
-            print("You escaped back to town!")
-            return hp, 0
-            
-    if m_hp <= 0:
-        print(f"VICTORY! You defeated the {monster['name']} and found {monster['money']} gold.")
-        return hp, monster["money"]
-    return 0, 0
+            print("You escaped!")
+            return
 
-"""Removed press enter to exit"""
+    if m_hp <= 0:
+        print(f"VICTORY! You found {monster['money']} gold.")
+        state["player_gold"] += monster["money"]
+
+def equip_item(state):
+    """Filters inventory for weapons and lets the user equip one."""
+    weapons = [i for i in state["player_inventory"] if i["type"] == "weapon"]
+    
+    if not weapons:
+        print("\nYou have no weapons to equip!")
+        return
+
+    print("\n--- Equip a Weapon ---")
+    for idx, w in enumerate(weapons):
+        status = "(Equipped)" if w.get("equipped") else ""
+        print(f"{idx + 1}) {w['name']} {status}")
+    print(f"{len(weapons) + 1}) Unequip All")
+
+    choice = get_user_action([str(i) for i in range(1, len(weapons) + 2)])
+    choice = int(choice)
+
+    for w in weapons:
+        w["equipped"] = False
+    
+    if choice <= len(weapons):
+        weapons[choice - 1]["equipped"] = True
+        print(f"You equipped the {weapons[choice - 1]['name']}!")
