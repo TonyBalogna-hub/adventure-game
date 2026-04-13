@@ -6,22 +6,33 @@ Things have been removed, changed, or added for the updated assignment.
 import gamefunctions
 
 def main():
-    """Main game state."""
-    state = {
-        "player_name": "Antonio",
-        "player_hp": 100,
-        "player_gold": 1000, 
-        "player_power": 15,
-        "player_inventory": [] 
-    }
+    print("--- ADVENTURE GAME ---")
+    print("1) New Game\n2) Load Game")
+    start_choice = gamefunctions.get_user_action(["1", "2"])
 
-    gamefunctions.print_welcome(state["player_name"], 30)
+    if start_choice == "2":
+        state = gamefunctions.load_game()
+        if state:
+            print(f"Welcome back, {state['player_name']}!")
+        else:
+            print("Starting new game instead")
+            start_choice = "1"
+    
+    if start_choice == "1":
+        state = {
+            "player_name": "Antonio",
+            "player_hp": 100,
+            "player_gold": 1000, 
+            "player_power": 15,
+            "player_inventory": [] 
+        }
+        gamefunctions.print_welcome(state["player_name"], 30)
     
     """Main game loop"""
     while state["player_hp"] > 0:
         print(f"\n--- TOWN ---")
         print(f"HP: {state['player_hp']} | Gold: {state['player_gold']}")
-        print("1) Fight Monster\n2) Visit Shop\n3) Equip Weapon\n4) Quit")
+        print("1) Fight Monster\n2) Visit Shop\n3) Equip Weapon\n4) Save and Quit")
         
         choice = gamefunctions.get_user_action(["1", "2", "3", "4"])
 
@@ -61,7 +72,6 @@ def main():
                     print("Not enough gold!")
 
             elif shop_choice == "3":
-                # ADDED: This is your restored resting feature
                 if state["player_gold"] >= 5:
                     state["player_gold"] -= 5
                     state["player_hp"] = 100
@@ -76,6 +86,8 @@ def main():
             gamefunctions.equip_item(state)
             
         elif choice == "4":
+            print("Attempting to save...")
+            gamefunctions.save_game(state, "savegame.json")
             print("Goodbye, Antonio!")
             break
 

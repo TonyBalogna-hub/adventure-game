@@ -141,3 +141,26 @@ def equip_item(state):
     if choice <= len(weapons):
         weapons[choice - 1]["equipped"] = True
         print(f"You equipped the {weapons[choice - 1]['name']}!")
+
+import json
+
+def save_game(state, filename="savegame.json"):
+    """Saves the player state to a .json file."""
+    try:
+        with open(filename, "w") as f:
+            json.dump(state, f, indent=4)
+        print(f"Game successfully saved to {filename}.")
+    except Exception as e:
+        print(f"Error saving game: {e}")
+
+def load_game(filename="savegame.json"):
+    """Loads the player state from a JSON file."""
+    import json
+    try:
+        with open(filename, "r") as f:
+            data = json.load(f)
+            print(f"DEBUG: Found file {filename} and loaded data.")
+            return data
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"DEBUG: Could not find or read {filename}.")
+        return None
