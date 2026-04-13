@@ -52,27 +52,6 @@ def new_random_monster():
         
     return monster
 
-if __name__ == "__main__":
-    """Call purchase_item three times with different inputs"""
-    num, money = purchase_item(341, 2112)
-    print(f"Bought: {num}, Left: {money}")
-
-    num, money = purchase_item(123, 201, 3)
-    print(f"Bought: {num}, Left: {money}")
-
-    num, money = purchase_item(100, 1000, 5)
-    print(f"Bought: {num}, Left: {money}")
-
-    """Call new_random_monster three different times"""
-    m1 = new_random_monster()
-    print(m1)
-
-    m2 = new_random_monster()
-    print(m2)
-
-    m3 = new_random_monster()
-    print(m3)
-
 def print_welcome(name, width):
     """Prints a elcome message
     Parameters: name, width
@@ -91,24 +70,13 @@ def print_shop_menu(item1Name, item1Price, item2Name, item2Price):
     print(f"| {item1Name:<12}{p1:>9} |")
     print(f"| {item2Name:<12}{p2:>9} |")
 
-if __name__ == "__main__":
-    """Call print_welcome three times"""
-    print_welcome("Jeff", 20)
-    print_welcome("Tony", 20)
-    print_welcome("Antonio", 23)
-
-    """Call print_shop_menu three times"""
-    print_shop_menu("Stew", 8, "Bread", 3)
-    print_shop_menu("Staff", 150, "Satchel", 30)
-    print_shop_menu("Sword", 150, "Shield", 90)
-
-def get_user_action(options, prompt_text="Choice: "):
-    """Validates user input and displays the specific menu provided."""
+def get_user_action(options):
+    """Validates user input for game options."""
     while True:
-        choice = input(prompt_text)
+        choice = input("Choice: ")
         if choice in options:
             return choice
-        print(f"Invalid choice '{choice}'. Please pick from {options}")
+        print(f"Invalid choice. Pick from {options}")
 
 def combat(state):
     """Handles fight logic using the state dictionary."""
@@ -125,12 +93,13 @@ def combat(state):
         has_orb = any(i["name"] == "Magic Orb" for i in state["player_inventory"])
         
         options = ["1", "2"]
-        prompt = "\nChoose your move:\n1) Attack\n2) Run"
+        prompt = "Choose your move:\n1) Attack\n2) Run"
         if has_orb:
             options.append("3")
             prompt += "\n3) Use Magic Orb (Instant Win!)"
         
-        action = get_user_action(options, prompt + "\nChoice: ")
+        print(prompt)
+        action = get_user_action(options)
         
         if action == "1":
             m_hp -= current_power
