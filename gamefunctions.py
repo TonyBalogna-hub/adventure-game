@@ -164,3 +164,63 @@ def load_game(filename="savegame.json"):
     except (FileNotFoundError, json.JSONDecodeError):
         print(f"DEBUG: Could not find or read {filename}.")
         return None
+
+def move_player(game_state, direction):
+    """Updates map_state in place and returns movement result."""
+    m_state = game_state["map_state"]
+    curr_x, curr_y = m_state["player_pos"]
+
+    """Finds newest position."""
+    if direction == "up" and curr_y > 0:
+        curr_y -= 1
+    elif direction == "down" and curr_y < 9:
+        curr_y += 1
+    elif direction == "left" and curr_x > 0:
+        curr_x -= 1
+    elif direction == "right" and curr_x < 9:
+        curr_x += 1
+    else:
+        return "blocked"
+
+    m_state["player_pos"] = [curr_x, curr_y]
+
+    if m_state["player_pos"] == m_state["town_pos"]:
+        return "returned_to_town"
+    elif m_state["player_pos"] == m_state["monster_pos"]:
+        return "monster_encounter"
+    
+    return "moved"
+
+def run_map_interface(game_state):
+    """Displays the 10x10 map and handles user input for movement."""
+    while True:
+        m_state = game_state["map_state"]
+        
+        print("\n" + "="*20)
+        for y in range(10):
+            row = ""
+            for x in range(10):
+                if [x, y] == m_state["player_pos"]:
+                    row += "P "
+                elif [x, y] == m_state["town_pos"]:
+                    row += "T "
+                elif [x, y] == m_state["monster_pos"]:
+                    row += "M "
+                else:
+                    row += ". "
+            print(row)
+        print("="*20)
+        print("W=Up, A=Left, S=Down, D=Right | Current Pos:", m_state["player_pos"])
+
+        move_map = {"w": "up", "s": "down", "a": "left", "d": "right"}
+        action = input("Move: ").lower()
+        
+        if action in move_map:
+            result = move_player(game_state, move_map[action])
+            
+            if result == "returned_to_town":
+                return "town"
+            elif result == "monster_encounter":
+                return "monster"
+            elif result == "blocked":
+                print("You can't go this way.")

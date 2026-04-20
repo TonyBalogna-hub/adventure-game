@@ -4,6 +4,7 @@ It will greet the user, display a shop menu, and simulate random monster encount
 Things have been removed, changed, or added for the updated assignment.
 """
 import gamefunctions
+import random
 
 def main():
     print("--- ADVENTURE GAME ---")
@@ -24,7 +25,12 @@ def main():
             "player_hp": 100,
             "player_gold": 1000, 
             "player_power": 15,
-            "player_inventory": [] 
+            "player_inventory": [],
+            "map_state": {
+                "player_pos": [0, 0],
+                "town_pos": [0, 0],
+                "monster_pos": [5, 5]
+            }
         }
         gamefunctions.print_welcome(state["player_name"], 30)
     
@@ -32,59 +38,73 @@ def main():
     while state["player_hp"] > 0:
         print(f"\n--- TOWN ---")
         print(f"HP: {state['player_hp']} | Gold: {state['player_gold']}")
-        print("1) Fight Monster\n2) Visit Shop\n3) Equip Weapon\n4) Save and Quit")
+        print("1) Explore Map\n2) Visit Shop\n3) Equip Weapon\n4) Save and Quit")
         
         choice = gamefunctions.get_user_action(["1", "2", "3", "4"])
 
         if choice == "1":
-            gamefunctions.combat(state)
+            result = gamefunctions.run_map_interface(state)
+            
+            if result == "monster":
+                gamefunctions.combat(state)
+                while True:
+                    new_x = random.randint(0, 9)
+                    new_y = random.randint(0, 9)
+                    if [new_x, new_y] != state["map_state"]["town_pos"] and \
+                       [new_x, new_y] != state["map_state"]["player_pos"]:
+                        state["map_state"]["monster_pos"] = [new_x, new_y]
+                        break
         
-        elif choice == "2":
-            """Shop logic updated with the old Sleep mechanic."""
-            print("\n--- SHOP ---")
-            gamefunctions.print_shop_menu("Sword", 150, "Magic Orb", 200)
-            print("1) Buy Sword\n2) Buy Magic Orb\n3) Sleep (5 Gold)\n4) Leave")
-            shop_choice = gamefunctions.get_user_action(["1", "2", "3", "4"])
-            
-            if shop_choice == "1":
-                num, remaining = gamefunctions.purchase_item(150, state["player_gold"])
-                if num > 0:
-                    state["player_gold"] = remaining
-                    state["player_inventory"].append({
-                        "name": "Sword", 
-                        "type": "weapon", 
-                        "equipped": False
-                    })
-                    print("You bought a Sword!")
-                else:
-                    print("Not enough gold!")
+        elif choice == "2" or choice == "3":
+            """Shop logic updated with the old sleep mechanic (accidentally removed) and tracks map state."""
+            if state["map_state"]["player_pos"] == state["map_state"]["town_pos"]:
+                if choice == "2":
+                    print("\n--- SHOP ---")
+                    gamefunctions.print_shop_menu("Sword", 150, "Magic Orb", 200)
+                    print("1) Buy Sword\n2) Buy Magic Orb\n3) Sleep (5 Gold)\n4) Leave")
+                    shop_choice = gamefunctions.get_user_action(["1", "2", "3", "4"])
+                    
+                    if shop_choice == "1":
+                        num, remaining = gamefunctions.purchase_item(150, state["player_gold"])
+                        if num > 0:
+                            state["player_gold"] = remaining
+                            state["player_inventory"].append({
+                                "name": "Sword", 
+                                "type": "weapon", 
+                                "equipped": False
+                            })
+                            print("You bought a Sword!")
+                        else:
+                            print("Not enough gold!")
 
-            elif shop_choice == "2":
-                num, remaining = gamefunctions.purchase_item(200, state["player_gold"])
-                if num > 0:
-                    state["player_gold"] = remaining
-                    state["player_inventory"].append({
-                        "name": "Magic Orb", 
-                        "type": "special"
-                    })
-                    print("You bought a Magic Orb!")
-                else:
-                    print("Not enough gold!")
+                    elif shop_choice == "2":
+                        num, remaining = gamefunctions.purchase_item(200, state["player_gold"])
+                        if num > 0:
+                            state["player_gold"] = remaining
+                            state["player_inventory"].append({
+                                "name": "Magic Orb", 
+                                "type": "special"
+                            })
+                            print("You bought a Magic Orb!")
+                        else:
+                            print("Not enough gold!")
 
-            elif shop_choice == "3":
-                if state["player_gold"] >= 5:
-                    state["player_gold"] -= 5
-                    state["player_hp"] = 100
-                    print(f"Restored to {state['player_hp']} HP!")
-                else:
-                    print("Not enough gold to sleep!")
-            
-            elif shop_choice == "4":
-                print("Returning to town...")
+                    elif shop_choice == "3":
+                        if state["player_gold"] >= 5:
+                            state["player_gold"] -= 5
+                            state["player_hp"] = 100
+                            print(f"Restored to {state['player_hp']} HP!")
+                        else:
+                            print("Not enough gold to sleep!")
+                    
+                    elif shop_choice == "4":
+                        print("Returning to town...")
 
-        elif choice == "3":
-            gamefunctions.equip_item(state)
-            
+                elif choice == "3":
+                    gamefunctions.equip_item(state)
+            else:
+                print("\n[!] You must be in Town (0,0) to use the Shop or Equip items!")
+
         elif choice == "4":
             print("Attempting to save...")
             gamefunctions.save_game(state, "savegame.json")
