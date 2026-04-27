@@ -7,6 +7,8 @@
 This provides necessary functions for managing the menus,
 basic commands, and generation of random monster encounters."""
 import random
+import json
+from wanderingmonster import WanderingMonster
 
 def purchase_item(itemPrice, startingMoney, quantityToPurchase=1):
     """Args:
@@ -147,18 +149,21 @@ import json
 def save_game(state, filename="savegame.json"):
     """Saves the player state to a .json file."""
     try:
+        save_state = state.copy()
+        save_state["monsters"] = [m.to_dict() for m in state["monsters"]]
         with open(filename, "w") as f:
-            json.dump(state, f, indent=4)
+            json.dump(save_state, f, indent=4)
         print(f"Game successfully saved to {filename}.")
     except Exception as e:
         print(f"Error saving game: {e}")
 
 def load_game(filename="savegame.json"):
-    """Loads the player state from a JSON file."""
     import json
+    from wanderingmonster import WanderingMonster
     try:
         with open(filename, "r") as f:
             data = json.load(f)
+            data["monsters"] = [WanderingMonster.from_dict(d) for d in data["monsters"]]
             print(f"DEBUG: Found file {filename} and loaded data.")
             return data
     except (FileNotFoundError, json.JSONDecodeError):
@@ -186,8 +191,6 @@ def move_player(game_state, direction):
 
     if m_state["player_pos"] == m_state["town_pos"]:
         return "returned_to_town"
-    elif m_state["player_pos"] == m_state["monster_pos"]:
-        return "monster_encounter"
     
     return "moved"
 
@@ -200,14 +203,15 @@ def run_map_interface(game_state):
         for y in range(10):
             row = ""
             for x in range(10):
+                char = ". "
                 if [x, y] == m_state["player_pos"]:
-                    row += "P "
+                    char = "P "
                 elif [x, y] == m_state["town_pos"]:
-                    row += "T "
-                elif [x, y] == m_state["monster_pos"]:
-                    row += "M "
-                else:
-                    row += ". "
+                    char = "T "
+                for m in game_state["monsters"]:
+                    if m.x == x and m.y == y:
+                        char = "M "
+                row += char
             print(row)
         print("="*20)
         print("W=Up, A=Left, S=Down, D=Right | Current Pos:", m_state["player_pos"])
@@ -218,9 +222,16 @@ def run_map_interface(game_state):
         if action in move_map:
             result = move_player(game_state, move_map[action])
             
+            p_pos = tuple(m_state["player_pos"])
+            for m in game_state["monsters"][:]:
+                if (m.x, m.y) == p_pos:
+                    return "monster"
+
+            occ = [(mon.x, mon.y) for mon in game_state["monsters"]]
+            for m in game_state["monsters"]:
+                m.move(occ, [p_pos, tuple(m_state["town_pos"])], 10, 10)
+
             if result == "returned_to_town":
                 return "town"
-            elif result == "monster_encounter":
-                return "monster"
             elif result == "blocked":
                 print("You can't go this way.")

@@ -5,6 +5,7 @@ Things have been removed, changed, or added for the updated assignment.
 """
 import gamefunctions
 import random
+from wanderingmonster import WanderingMonster
 
 def main():
     print("--- ADVENTURE GAME ---")
@@ -28,10 +29,16 @@ def main():
             "player_inventory": [],
             "map_state": {
                 "player_pos": [0, 0],
-                "town_pos": [0, 0],
-                "monster_pos": [5, 5]
-            }
+                "town_pos": [0, 0]
+            },
+            "monsters": []
         }
+
+        for _ in range(1):
+            m = WanderingMonster.random_spawn([], 
+                [tuple(state["map_state"]["player_pos"]), tuple(state["map_state"]["town_pos"])], 10, 10)
+            state["monsters"].append(m)
+
         gamefunctions.print_welcome(state["player_name"], 30)
     
     """Main game loop"""
@@ -46,14 +53,18 @@ def main():
             result = gamefunctions.run_map_interface(state)
             
             if result == "monster":
-                gamefunctions.combat(state)
-                while True:
-                    new_x = random.randint(0, 9)
-                    new_y = random.randint(0, 9)
-                    if [new_x, new_y] != state["map_state"]["town_pos"] and \
-                       [new_x, new_y] != state["map_state"]["player_pos"]:
-                        state["map_state"]["monster_pos"] = [new_x, new_y]
-                        break
+                gamefunctions.combat(state) 
+                
+                p_pos = tuple(state["map_state"]["player_pos"])
+                for m in state["monsters"][:]:
+                    if (m.x, m.y) == p_pos:
+                        state["monsters"].remove(m)
+                
+                if len(state["monsters"]) == 0:
+                    for _ in range(2):
+                        new_m = WanderingMonster.random_spawn([], 
+                            [p_pos, tuple(state["map_state"]["town_pos"])], 10, 10)
+                        state["monsters"].append(new_m)
         
         elif choice == "2" or choice == "3":
             """Shop logic updated with the old sleep mechanic (accidentally removed) and tracks map state."""
