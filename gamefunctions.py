@@ -120,6 +120,9 @@ def combat(state):
         print(f"VICTORY! You found {monster['money']} gold.")
         state["player_gold"] += monster["money"]
 
+        state["player_kills"] += 1 
+        print(f"Total Monsters Slain: {state['player_kills']}")
+
 def equip_item(state):
     """Filters inventory for weapons and lets the user equip one."""
     weapons = [i for i in state["player_inventory"] if i["type"] == "weapon"]
@@ -221,6 +224,9 @@ def run_map_interface(game_state):
         
         if action in move_map:
             result = move_player(game_state, move_map[action])
+
+            if result == "moved" or result == "returned_to_town":
+                game_state["moves_made"] += 1
             
             p_pos = tuple(m_state["player_pos"])
             for m in game_state["monsters"][:]:

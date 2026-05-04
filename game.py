@@ -26,6 +26,8 @@ def main():
             "player_hp": 100,
             "player_gold": 1000, 
             "player_power": 15,
+            "player_kills": 0,  #Tracks total kills
+            "moves_made": 0,    #Tracks total steps on the map
             "player_inventory": [],
             "map_state": {
                 "player_pos": [0, 0],
@@ -43,6 +45,10 @@ def main():
     
     """Main game loop"""
     while state["player_hp"] > 0:
+        print("\n" + "="*40)
+        print(f" PLAYER: {state['player_name']} | KILLS: {state['player_kills']} | MOVES: {state['moves_made']}")
+        print(f" HP: {state['player_hp']}/100 | GOLD: {state['player_gold']}")
+        print("="*40)
         print(f"\n--- TOWN ---")
         print(f"HP: {state['player_hp']} | Gold: {state['player_gold']}")
         print("1) Explore Map\n2) Visit Shop\n3) Equip Weapon\n4) Save and Quit")
